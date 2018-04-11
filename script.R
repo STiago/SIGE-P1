@@ -1,4 +1,5 @@
 library(readr)
+library(dplyr)
 loans <- read_csv("~/Escritorio/SIGE/practica/LoanStats_2017Q4.csv",
     skip = 1)
 View(loans)
@@ -20,6 +21,8 @@ class_variable = sapply(loans$loan_status, function(column_value) {
 
 loans$loan_status <- class_variable
 
+## 1. Eliminación de instancias pertenecientes a clases no relevantes- Now we remove the row per column value "To be removed"
+loans <- loans[loans$loan_status != "To be removed", ]
 
 
 # Attributes / Column names
@@ -72,5 +75,32 @@ loans = loans[,-c(columns_to_remove)]
 dim(loans)
 View(loans)
 
+# 3. Eliminación de variables sin información: Finding not relevant values
 
+Vemos que las 3 primeras columnas parecen iguales pero al aplicar el iquals vemos que las dos que son iguales son las dos primeras:
+identical(loans$loan_amnt, loans$funded_amnt)
+Returns -> True
+identical(loans$funded_amnt, loans$funded_amnt_inv)
+Returns -> False
+
+Asi que sabiendo que las dos primeras son iguales pasamos a eliminar una de ellas:
+loans <- subset(loans, select= -funded_amnt)
+
+Ahora pasamos a explorar el contenido de las siguientes columnas en busca 
+pie(table(loans$tax_liens), title="test")
+table(table(loans$tax_liens))
+
+
+
+
+
+
+#################################################################################################################
 ########
+table(class_variable)
+pie(table(class_variable))
+barplot(table(loans$loan_amnt), main = "tittle")
+########
+
+##Para tener todos los valores de una columna
+t <- table(loans$loan_status)
