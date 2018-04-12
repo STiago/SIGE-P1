@@ -132,10 +132,7 @@ Encontramos que el siguiente valor solo tiene un único valor en todas sus colum
       114805
   loans$collection_recovery_fee <- NULL
 
-
-pie(table(loans$tax_liens), title="test")
-table(table(loans$tax_liens))
-
+- SIGUIENTE ES total_rec_int
 
 
 
