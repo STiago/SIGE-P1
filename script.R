@@ -270,7 +270,13 @@ for (i in 1:length(loans$title)) {
       loans$title[i] <- "other"
   }else if(loans$title[i]=="Vacation"){
       loans$title[i] <- "vacation"
+  }
+}
 
+Ahora eliminamos la columna title ya que solo se diferencia de en 2 valores con la columna purpose y no estan escritos bien los nombres para su tratamiento.
+loans$title <- NULL
+> dim(loans)
+[1] 114805     87
 
 
 #################################################################################################################
