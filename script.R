@@ -75,6 +75,8 @@ loans = loans[,-c(columns_to_remove)]
 dim(loans)
 View(loans)
 
+
+
 # 3. Eliminación de variables sin información: Finding not relevant values
 
 Vemos que las 3 primeras columnas parecen iguales pero al aplicar el identical vemos que las dos que son iguales son las dos primeras:
@@ -90,7 +92,7 @@ Ahora pasamos a explorar el contenido de las siguientes columnas y procedemos a 
 Valores muy desiqlibrados: eg: S->114600 N->3 ó  0->114690, 4->1, 13->2, 26->1
 - table(loans$hardship_flag): Donde sale que todas las filas no tienen este plan en su prestamos y solo un caso si N=114804      Y=1
   loans$hardship_flag <- NULL
-  
+
 - table(loans$debt_settlement_flag): Ocurre lo mismo que con el anterior y recibimos el mismo resultado
   ELiminamos haciendo:
   loans$debt_settlement_flag <- NULL
@@ -146,9 +148,128 @@ Encontramos que el siguiente valor solo tiene un único valor en todas sus colum
       114805
   loans$collection_recovery_fee <- NULL
 
--
+
 dim(loans)
-[1] 114805     89
+[1] 114805     88
+
+
+2. Transformacion
+Pasamos a transformar los valores de la columna "title" para compararla con los de la columna "purpose".
+- table(loans$title)
+            Business             Car financing          Credit card refinancing
+                1455                      1311                            24677
+  Debt consolidation                Green loan                      Home buying
+               60567                        72                             1345
+    Home improvement     Learning and training                   Major purchase
+                8341                         1                             3094
+    Medical expenses      Moving and relocation                           Other
+                1872                        862                           10387
+            Vacation
+                 821
+- table(loans$purpose)
+             car        credit_card  debt_consolidation        educational
+            1311              24676               60568                  1
+home_improvement              house      major_purchase            medical
+            8341               1345                3093               1873
+          moving              other    renewable_energy     small_business
+             862              10387                  72               1455
+        vacation
+             821
+
+- Comparamos las columnas "title" y "purpose":
+Seleccionamos las dos columnas:
+title_purpose <- subset(loans, select=c("title", "purpose"))
+Ahora mostramos el numero de elementos distintos que tienen ambas columnas:
+length(unique(title_purpose$title))
+[1] 13
+length(unique(title_purpose$purpose))
+[1] 13
+A continuacion mostramos las graficas de sectores de ambos para compararlos
+with(title_purpose, pie(table(title), labels=levels(title), xlab="", ylab="",  main="title", col=rainbow_hcl(13)))
+with(title_purpose, pie(table(purpose), labels=levels(purpose), xlab="",
+  ylab="", main="purpose", col=rainbow_hcl(13)))
+
+Tambien mostramos la tabla donde tambien podemos apreciar claramente que se corresponden los valores:
+purpose
+title                       car credit_card debt_consolidation educational
+Business                    0           0                  0           0
+Car financing            1311           0                  0           0
+Credit card refinancing     0       24676                  1           0
+Debt consolidation          0           0              60567           0
+Green loan                  0           0                  0           0
+Home buying                 0           0                  0           0
+Home improvement            0           0                  0           0
+Learning and training       0           0                  0           1
+Major purchase              0           0                  0           0
+Medical expenses            0           0                  0           0
+Moving and relocation       0           0                  0           0
+Other                       0           0                  0           0
+Vacation                    0           0                  0           0
+ purpose
+title                     home_improvement house major_purchase medical moving
+Business                               0     0              0       0      0
+Car financing                          0     0              0       0      0
+Credit card refinancing                0     0              0       0      0
+Debt consolidation                     0     0              0       0      0
+Green loan                             0     0              0       0      0
+Home buying                            0  1345              0       0      0
+Home improvement                    8341     0              0       0      0
+Learning and training                  0     0              0       0      0
+Major purchase                         0     0           3093       1      0
+Medical expenses                       0     0              0    1872      0
+Moving and relocation                  0     0              0       0    862
+Other                                  0     0              0       0      0
+Vacation                               0     0              0       0      0
+ purpose
+title                     other renewable_energy small_business vacation
+Business                    0                0           1455        0
+Car financing               0                0              0        0
+Credit card refinancing     0                0              0        0
+Debt consolidation          0                0              0        0
+Green loan                  0               72              0        0
+Home buying                 0                0              0        0
+Home improvement            0                0              0        0
+Learning and training       0                0              0        0
+Major purchase              0                0              0        0
+Medical expenses            0                0              0        0
+Moving and relocation       0                0              0        0
+Other                   10387                0              0        0
+Vacation                    0                0              0      821
+
+
+
+Por lo que comparandolas podemos ver que se corresponden bastante bien.
+Aun asi, sabiendo ya que son la misma columna para estar mas seguros vamos a transformar los nombres de la columna tittle a los correspondientes nombres de la columna title_purpose.
+
+
+
+for (i in 1:length(loans$title)) {
+   if(loans$title[i]=="Debt consolidation"){
+      loans$title[i] <- "debt_consolidation"
+   }else if(loans$title[i]=="Business"){
+      loans$title[i] <- "small_business"
+  }else if(loans$title[i]=="Car financing"){
+      loans$title[i] <- "car"
+  }else if(loans$title[i]=="Credit card refinancing"){
+      loans$title[i] <- "credit_card"
+  }else if(loans$title[i]=="Green loan"){
+      loans$title[i] <- "renewable_energy"
+  }else if(loans$title[i]=="Home buying"){
+      loans$title[i] <- "house"
+  }else if(loans$title[i]=="Home improvement"){
+      loans$title[i] <- "home_improvement"
+  }else if(loans$title[i]=="Learning and training"){
+      loans$title[i] <- "educational"
+  }else if(loans$title[i]=="Major purchase"){
+      loans$title[i] <- "major_purchase"
+  }else if(loans$title[i]=="Medical expenses"){
+      loans$title[i] <- "medical"
+  }else if(loans$title[i]=="Moving and relocation"){
+      loans$title[i] <- "moving"
+  }else if(loans$title[i]=="Other"){
+      loans$title[i] <- "other"
+  }else if(loans$title[i]=="Vacation"){
+      loans$title[i] <- "vacation"
 
 
 
