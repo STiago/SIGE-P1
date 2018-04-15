@@ -295,17 +295,27 @@ for(i in 1:total_columns){
     while(j <= total_columns){
         #print(sprintf("i = %s, j = %s", numeric_columns[i], numeric_columns[j]))
         test <- cor(loans[numeric_columns[i]],loans[numeric_columns[j]],method="pearson")
+        v
         j <- j+1
         print(test)
     }
 }
 
-for(i in names(loans)){
-  if(i=="tax_liens"){
-    print("si")
+
+
+#Creamos ds 2 copiando los elementos de loans
+loans2 <- loans
+
+for(i in names(loans2)){
+  for(j in character_columns){
+    if(i==j){
+      loans2[i] <- NULL
+    }
   }
 }
 
+# Obtenemos los coeficientes de correlacion entre todas las variables
+val_cor <- cor(loans2)
 
 
 
