@@ -291,17 +291,20 @@ character_columns = cols[lapply(loans, typeof) == "character"]
 
 total_columns = length(numeric_columns)
 for(i in 1:total_columns){
-  j <- i+1
-  while(j <= total_columns){
-      print(sprintf("i = %d, j = %d", i, j))
-      print(cor(numeric_columns[i], numeric_columns[j]))
-      j <- j+1
-  }
+    j <- i+1
+    while(j <= total_columns){
+        #print(sprintf("i = %s, j = %s", numeric_columns[i], numeric_columns[j]))
+        test <- cor(loans[numeric_columns[i]],loans[numeric_columns[j]],method="pearson")
+        j <- j+1
+        print(test)
+    }
 }
 
-for i in range(0, len(l)):
-   for j in range(i+1, len(l)):
-   print(i,j)
+for(i in names(loans)){
+  if(i=="tax_liens"){
+    print("si")
+  }
+}
 
 
 
