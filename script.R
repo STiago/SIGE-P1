@@ -4,7 +4,8 @@ loans <- read_csv("~/Escritorio/SIGE/practica/LoanStats_2017Q4.csv",
     skip = 1)
 View(loans)
 
-
+#Previews of loans
+sapply(loans[1, ], class)
 
 # Normalize class variable
 
@@ -277,6 +278,32 @@ Ahora eliminamos la columna title ya que solo se diferencia de en 2 valores con 
 loans$title <- NULL
 > dim(loans)
 [1] 114805     87
+
+
+### Correlacion por cada par de variables
+# Almacenamos las columnas cuyos valores son continuos
+numeric_columns = cols[lapply(loans, typeof) != "character"]
+
+# Almacenamos las columnas cuyos valores son categoricos
+character_columns = cols[lapply(loans, typeof) == "character"]
+
+# Recorremos por cada par de valores para ver su correlacion
+
+total_columns = length(numeric_columns)
+for(i in 1:total_columns){
+  j <- i+1
+  while(j <= total_columns){
+      print(sprintf("i = %d, j = %d", i, j))
+      print(cor(numeric_columns[i], numeric_columns[j]))
+      j <- j+1
+  }
+}
+
+for i in range(0, len(l)):
+   for j in range(i+1, len(l)):
+   print(i,j)
+
+
 
 
 #################################################################################################################
