@@ -288,18 +288,43 @@ numeric_columns = cols[lapply(loans, typeof) != "character"]
 character_columns = cols[lapply(loans, typeof) == "character"]
 
 # Recorremos por cada par de valores para ver su correlacion
-
+correlation_array <- c("i","j","cor_coef")
 total_columns = length(numeric_columns)
+li = c()
+col1 = c()
+col2 = c()
+coefi = c()
 for(i in 1:total_columns){
     j <- i+1
     while(j <= total_columns){
         #print(sprintf("i = %s, j = %s", numeric_columns[i], numeric_columns[j]))
-        test <- cor(loans[numeric_columns[i]],loans[numeric_columns[j]],method="pearson")
-        v
+        coef <- cor(loans[numeric_columns[i]],loans[numeric_columns[j]],method="pearson")
+        each_column <- c(numeric_columns[i],numeric_columns[j], as.numeric(coef))
+        li = c(li,each_column)
         j <- j+1
-        print(test)
+        #print(test)
+
+        col1 <- c(col1, numeric_columns[i])
+        col2 <- c(col2, numeric_columns[j])
+
+        if(is.na(coef)){
+          coefi <- c(coefi, 0)
+        }else{
+          coefi <- c(coefi, coef)
+        }
+
     }
 }
+
+pairs <- data.frame(col1, col2, coefi)
+
+pairs = pairs[pairs$coefi != 0,]
+
+library(data.table)
+pairs = setorder(setDT(pairs), -"coefi")
+View(pairs)
+
+
 
 
 
