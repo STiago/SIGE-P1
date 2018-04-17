@@ -326,7 +326,7 @@ View(pairs)
 
 
 
-
+###### OTHER
 
 #Creamos ds 2 copiando los elementos de loans
 loans2 <- loans
@@ -342,7 +342,22 @@ for(i in names(loans2)){
 # Obtenemos los coeficientes de correlacion entre todas las variables
 val_cor <- cor(loans2)
 
+#####
 
+# Decision tree
+library(rpart)
+fit <- rpart(loans$loan_status ~ ., data = loans, method = "class", control = list(maxdepth = 5))
+plot(fit)
+
+install.packages('rattle')
+install.packages('rpart.plot')
+install.packages('RColorBrewer')
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+
+# Printing the tree
+fancyRpartPlot(fit)
 
 #################################################################################################################
 ########
