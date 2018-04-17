@@ -324,11 +324,19 @@ library(data.table)
 pairs = setorder(setDT(pairs), -"coefi")
 View(pairs)
 
+# Procedemos a eliminar las variables segun el coeficiente de correlacion
+pairs_to_remove <- c()
+
+for (i in pairs$coefi){
+  if(i >= 0.95){
+    pairs_to_remove <- c(i, pairs_to_remove)
+  }
+}
+pairs_to_remove
 
 
 ###### OTHER
-
-#Creamos ds 2 copiando los elementos de loans
+# Creamos ds 2 copiando los elementos de loans
 loans2 <- loans
 
 for(i in names(loans2)){
@@ -341,8 +349,8 @@ for(i in names(loans2)){
 
 # Obtenemos los coeficientes de correlacion entre todas las variables
 val_cor <- cor(loans2)
-
 #####
+
 
 # Decision tree
 library(rpart)
