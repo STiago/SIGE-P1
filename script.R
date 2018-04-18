@@ -334,6 +334,10 @@ for (i in pairs$coefi){
 }
 pairs_to_remove
 
+#The pairs to remove are: installment, annual_inc, dti, delinq_2yrs, inq_last_6mths, open_acc, pub_rec, revol_bal, total_acc
+
+dim(loans)
+#Should be 78
 
 ###### OTHER
 # Creamos ds 2 copiando los elementos de loans
@@ -366,6 +370,24 @@ library(RColorBrewer)
 
 # Printing the tree
 fancyRpartPlot(fit)
+
+summary(fit)
+
+#Variable importance 6
+#       emp_title     last_pymnt_d  last_pymnt_amnt    total_rec_int      total_pymnt  total_pymnt_inv
+#              31               15               10               10                9                9
+# total_rec_prncp       revol_util         zip_code earliest_cr_line
+#               9                3                1                1
+
+#Variable importance 10
+#       emp_title       revol_util     last_pymnt_d         zip_code earliest_cr_line  last_pymnt_amnt
+#              27               11               11                9                9                6
+#   total_rec_int      total_pymnt  total_pymnt_inv  total_rec_prncp         int_rate       addr_state
+#               5                5                5                5                2                1
+#       sub_grade       emp_length
+#               1                1
+
+
 
 #################################################################################################################
 ########
