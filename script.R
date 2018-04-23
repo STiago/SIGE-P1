@@ -337,6 +337,15 @@ pairs_to_remove
 #The pairs to remove are: installment, annual_inc, dti, delinq_2yrs, inq_last_6mths, open_acc, pub_rec, revol_bal, total_acc
 
 dim(loans)
+loans3$installment <- NULL
+loans3$annual_inc <- NULL
+loans3$dti <- NULL
+loans3$delinq_2yrs <- NULL
+loans3$inq_last_6mths <- NULL
+loans3$open_acc <- NULL
+loans3$pub_rec <- NULL
+loans3$revol_bal <- NULL
+loans3$total_acc <- NULL
 #Should be 78
 
 ###### OTHER
@@ -388,6 +397,31 @@ summary(fit)
 #               1                1
 
 
+# Random Forest
+library(randomForest);
+
+# Imputacion con rfImpute del package randomForest
+loans3.na <- loans
+loans3.imputed <- rfImpute(loans3$loan_status ~ ., loans3.na)
+loans5 <- loans4
+loans5 <- loans4[complete.cases(loans4), ]
+
+dim(loans4)
+#[1] 114805     78
+
+dim(loans5)
+#[1] 73002    78
+
+loans5_rforest <- randomForest(as.factor(loans5$loan_status) ~., data=loans5, importance=TRUE, ntree=2000)
+
+
+
+
+
+
+
+
+
 
 #################################################################################################################
 ########
@@ -398,3 +432,19 @@ barplot(table(loans$loan_amnt), main = "tittle")
 
 ##Para tener todos los valores de una columna
 t <- table(loans$loan_status)
+
+####
+coefi <- c()
+col1 <- c()
+col2 <- c()
+col1 <- c(col1, numeric_columns[i])
+col2 <- c(col2, numeric_columns[j])
+if(is.na(coef)){
+  coefi <- c(coefi, 0)
+}else{
+coefi <- c(coefi, coef)
+}
+pairs <- data.frame(col1, col2, coefi)
+pairs = pairs[pairs$coefi != 0,]
+library(data.table)
+pairs = setorder(setDT(pairs), -"coefi")
