@@ -427,7 +427,7 @@ tmp[upper.tri(tmp)] <- 0
 diag(tmp) <- 0
 
 #Alta Correlacion
-loans6.important.numeric <- loans6.numeric[,!apply(tmp,2,function(x) any(x > 0.99))]
+loans6.important.numeric <- loans6.numeric[,!apply(tmp,2,function(x) any(x > 0.95))]
 head(loans6.important.numeric)
 names(loans6.important.numeric)
 
@@ -440,13 +440,25 @@ rf.model <- randomForest(loans6.important.numeric$loan_status ~.,
             ntree = 35,
             type="classification",
             importance=TRUE,
-            na.action=na.omit
+            na.action=na.omit)
 
-# Visualizamos las variables mas importantes
+# Visualizamos las variables mas importantes http://analisisydecision.es/medir-la-importancia-de-las-variables-con-random-forest/
 varImpPlot(rf.model)
+getTree(rf.model, 1)
 
+# Medimos las importancias de las variables
+# Creamos un objeto con las "importancias" de las variables con sort_df
+importancia=data.frame(importance(rf.model))
+library(reshape)
+importancia<-sort_df(importancia,vars='MeanDecreaseGini')
+importancia
 
-
+# Podemos medir la importancia tambien con el paquete party
+library(party)
+set.seed(5)
+def = cforest_classical(ntree=500, mtry=25)
+rf.model2 = cforest(loans6.important.numeric$loan_status~., data = loans6.important.numeric, controls=def)
+importancias2 = varimp(rf.model2, conditional = TRUE)
 
 
 
