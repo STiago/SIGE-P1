@@ -405,6 +405,7 @@ loans3.na <- loans
 loans3.imputed <- rfImpute(loans3$loan_status ~ ., loans3.na)
 
 # Eliminamos filas de casos con NA
+loans4 <- loans3
 loans5 <- loans4
 loans5 <- loans4[complete.cases(loans4), ]
 
@@ -460,6 +461,13 @@ def = cforest_classical(ntree=500, mtry=25)
 rf.model2 = cforest(loans6.important.numeric$loan_status~., data = loans6.important.numeric, controls=def)
 importancias2 = varimp(rf.model2, conditional = TRUE)
 
+
+# Otro paquete es varSelRF
+library(varSelRF)
+rf.model3 <- randomForest(loans6.important.numeric$loan_status~.,data=loans6.important.numeric,
+ntree=35,importance=TRUE,maxnodes=10,mtry=25)
+importancia3 <- randomVarImpsRF(xdata=loans6.important.numeric[,-177],Class=loans6.important.numeric$loan_status,
+forest=rf.model3,usingCluster = FALSE)
 
 
 
