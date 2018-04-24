@@ -403,6 +403,8 @@ library(randomForest);
 # Imputacion con rfImpute del package randomForest
 loans3.na <- loans
 loans3.imputed <- rfImpute(loans3$loan_status ~ ., loans3.na)
+
+# Eliminamos filas de casos con NA
 loans5 <- loans4
 loans5 <- loans4[complete.cases(loans4), ]
 
@@ -412,9 +414,36 @@ dim(loans4)
 dim(loans5)
 #[1] 73002    78
 
-loans5_rforest <- randomForest(as.factor(loans5$loan_status) ~., data=loans5, importance=TRUE, ntree=2000)
 
 
+library(dplyr)
+loans6=loans5 %>% mutate_if(is.character, as.factor)
+
+# Nos quedamos con los atributos numericos
+nums <- unlist(lapply(loans6, is.numeric))
+loans6.numeric = loans6[, nums]
+tmp <- cor(loans6.numeric)
+tmp[upper.tri(tmp)] <- 0
+diag(tmp) <- 0
+
+#Alta Correlacion
+loans6.important.numeric <- loans6.numeric[,!apply(tmp,2,function(x) any(x > 0.99))]
+head(loans6.important.numeric)
+names(loans6.important.numeric)
+
+# Añado la columna loan_status a loans6.important.numeric antes de aplicar random Forest
+loans6.important.numeric$loan_status <- loans6$loan_status
+
+# Random fores para quedarnos con las variables numericas mas importantes
+rf.model <- randomForest(loans6.important.numeric$loan_status ~.,
+            data = loans6.important.numeric,
+            ntree = 35,
+            type="classification",
+            importance=TRUE,
+            na.action=na.omit
+
+# Visualizamos las variables mas importantes
+varImpPlot(rf.model)
 
 
 
