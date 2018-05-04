@@ -1,3 +1,4 @@
+#Cargamos librerias
 library(readr)
 library(dplyr)
 loans <- read_csv("~/Escritorio/SIGE/practica/LoanStats_2017Q4.csv",
@@ -523,47 +524,156 @@ abline(a=0, b= 1)
 
 
 # Random forest
-rf.model_train <- randomForest(entrenamiento$loan_status ~.,
+entrenamiento$last_pymnt_amnt <-as.factor(entrenamiento$last_pymnt_amnt)
+entrenamiento$total_rec_int <-as.factor(entrenamiento$total_rec_int)
+entrenamiento$total_pymnt <-as.factor(entrenamiento$total_pymnt)
+entrenamiento$total_pymnt_inv <-as.factor(entrenamiento$total_pymnt_inv)
+entrenamiento$total_rec_prncp <-as.factor(entrenamiento$total_rec_prncp)
+
+#entrenamiento1=entrenamiento %>% mutate_if(is.character, as.factor)
+#entrenamiento1.imputed <- rfImpute(entrenamiento1$loans_status ~ ., entrenamiento1) #No necesaria la imputacion aqui ya que se hico en el dataset completo anteriormente
+rf.model_train <- randomForest(as.factor(entrenamiento$loan_status) ~.,
             data = entrenamiento,
             ntree = 1000,
             type="classification",
             importance=TRUE,
             na.action=na.omit)
 
-rf.model_train <- randomForest(entrenamiento$loans_status ~ entrenamiento$purpose + entrenamiento$sub_grade + entrenamiento$verification_status + entrenamiento$last_pymnt_d +entrenamiento$last_pymnt_amnt, data = entrenamiento,
-ntree = 1000,
-type="classification",
-importance=TRUE,
-na.action=na.omit)
+#rf.model_train <- randomForest(entrenamiento$loans_status ~ entrenamiento$purpose + entrenamiento$sub_grade + entrenamiento$emp_length + entrenamiento$total_pymnt_inv + entrenamiento$verification_status + entrenamiento$total_pymnt + entrenamiento$last_pymnt_amnt + entrenamiento$total_rec_int + entrenamiento$last_pymnt_d + entrenamiento$last_pymnt_d + entrenamiento$last_pymnt_amnt, data = entrenamiento,
+#ntree = 10,
+#type="classification",
+#importance=TRUE,
+#na.action=na.omit)
 
+
+#Visualizacion random forest
 varImpPlot(rf.model_train)
 getTree(rf.model_train, 1)
 
+# Error rate
+plot(rf.model_train, ylim=c(0,0.36))
+legend('topright', colnames(rf.model_train$err.rate), col=1:3, fill=1:3)
+
+#Roc
+predict.rf <- predict(rf.model_train,validacion,type = "prob")[,2]
+predict.rocr.rf  <- prediction (predict.rf,validacion$loans_status)
+perf.rocr.rf     <- performance(predict.rocr.rf,"tpr","fpr")
 
 
 
+# Lineal regresion
+base <- mean(as.numeric(entrenamiento$loans_status))
+RMSE.base <- sqrt(mean((base-as.numeric(validacion$loans_status))^2))
+
+
+lin.reg <- lm(as.numeric(entrenamiento$loans_status) ~ entrenamiento$purpose + entrenamiento$sub_grade + entrenamiento$emp_length + entrenamiento$total_pymnt_inv + entrenamiento$verification_status + entrenamiento$total_pymnt + entrenamiento$last_pymnt_amnt + entrenamiento$total_rec_int + entrenamiento$last_pymnt_d, data = entrenamiento)
+summary(lin.reg)
+
+test.pred.lin <- exp(predict(lin.reg, validacion))-1
+RMSE.lin.reg <- sqrt(mean((test.pred.lin-as.numeric(validacion$loans_status))^2))
+MAE.lin.reg <- mean(abs(test.pred.lin-as.numeric(validacion$loans_status)))
+
+plot(entrenamiento$loans_status, entrenamiento$purpose, xlab = "LoansStatus", ylab = "")
+abline(lin.reg)
+
+#Prediccion
+predict(lin.reg, validacion)
+residuos <- rstandard(lin.reg)
+valores.ajustados <- fitted(lin.reg)
+plot(valores.ajustados, residuos)
+
+#Hipotesis de normalidad
+qqnorm(residuos)
+qqline(residuos)
+
+
+
+# SVM
+#Realización de modelo con la librería e1071
+library(e1071);
+modelo_svm=svm(as.factor(entrenamiento$loans_status)~.,data=entrenamiento,method="C-classification",
+kernel="radial",cost=10,gamma=1)
+#modelo_svm=svm(as.factor(entrenamiento$loans_status)~entrenamiento$verification_status+entrenamiento$sub_grade,data=entrenamiento,method="C-classification",
+#                kernel="radial",cost=10,gamma=1)
+svm_predic = data.frame(predict(modelo_svm, entrenamiento))
+svpred <- predict(modelo_svm, entrenamiento)
+svm_resul = cbind(entrenamiento, predic=svm_predic)
+table(svm_resul$loans_status, svm_resul$predict.modelo_svm..entrenamiento.)
+
+#           Not_paid  Paid
+#  Not_paid        0   651
+#  Paid            0 50364
+
+(confu <- with(validacion, table(svm_pred, entrenamiento$loans_status))))
+(correctamente <-sum(diag(confu))/nrow(validacion)*100)
+
+#Roc
+roc_obj <- roc(entrenamiento$loans_status, as.numeric(svpred))
+auc(roc_obj)
+
+
+
+# Regresion logistica
+library(ISLR)
+glm.fit = glm( entrenamiento$loans_status~entrenamiento$purpose + entrenamiento$sub_grade + entrenamiento$emp_length + entrenamiento$total_pymnt_inv + entrenamiento$verification_status + entrenamiento$total_pymnt + entrenamiento$last_pymnt_amnt + entrenamiento$total_rec_int + entrenamiento$last_pymnt_d,
+               ,data = entrenamiento , family = binomial )
+
+print(summary(glm.fit))
+
+cat("Codificación de la variable clase (Paid: 1, Not_paid:0)\n")
+print(contrasts(entrenamiento$loans_status))
+
+#Calcula la probabilidad de ser pagado
+glm.probs <- predict ( glm.fit , type ="response")
+
+#Pinta las probabilidades de ser o no pagado de los diez primeros
+print(glm.probs[1:10])
+glm.pred <- rep ("Not_paid" ,1250)
+glm.pred [ glm.probs >.5] <- "Paid"
+
+#Calcula ahora las probabilidades para los diez primeros de ser pagado o no
+print(glm.pred[1:10])
+
+#Matriz de confusión, donde la diagonal son los correctamente clasificados
+print(table ( glm.pred , entrenamiento$loans_status ))
+
+# Ahora vemos cuantos casos tenemos correctamente clasificados
+correc <- mean(glm.pred == loan_status)
+cat(correc * 100,"% casos bien clasificados\n")
+
+
+
+#CForest
+cf.model <- cforest(as.factor(entrenamiento$loans_status) ~entrenamiento$purpose + entrenamiento$sub_grade + entrenamiento$emp_length + entrenamiento$total_pymnt_inv + entrenamiento$verification_status + entrenamiento$total_pymnt + entrenamiento$last_pymnt_amnt + entrenamiento$total_rec_int + entrenamiento$last_pymnt_d,
+               data = entrenamiento,
+               controls=cforest_unbiased(ntree=10, mtry=3))
+
+predict.cf <- predict(cf.model,validacion,type = "prob")[,2]
+predict.rocr.rf  <- prediction (predict.rf,validacion$loans_status)
+perf.rocr.rf <- performance(predict.rocr.rf,"tpr","fpr")
+#Sin finalizar
+
+
+
+
+#
 #################################################################################################################
-########
-table(class_variable)
-pie(table(class_variable))
-barplot(table(loans$loan_amnt), main = "tittle")
-########
 
 ##Para tener todos los valores de una columna
-t <- table(loans$loan_status)
+#t <- table(loans$loan_status)
 
 ####
-coefi <- c()
-col1 <- c()
-col2 <- c()
-col1 <- c(col1, numeric_columns[i])
-col2 <- c(col2, numeric_columns[j])
-if(is.na(coef)){
-  coefi <- c(coefi, 0)
-}else{
-coefi <- c(coefi, coef)
-}
-pairs <- data.frame(col1, col2, coefi)
-pairs = pairs[pairs$coefi != 0,]
-library(data.table)
-pairs = setorder(setDT(pairs), -"coefi")
+#coefi <- c()
+#col1 <- c()
+#col2 <- c()
+#col1 <- c(col1, numeric_columns[i])
+#col2 <- c(col2, numeric_columns[j])
+#if(is.na(coef)){
+#  coefi <- c(coefi, 0)
+#}else{
+#coefi <- c(coefi, coef)
+#}
+#pairs <- data.frame(col1, col2, coefi)
+#pairs = pairs[pairs$coefi != 0,]
+#library(data.table)
+#pairs = setorder(setDT(pairs), -"coefi")
